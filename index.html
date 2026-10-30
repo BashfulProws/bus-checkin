@@ -68,7 +68,7 @@
 
 <section class="setup" id="setup" hidden>
   <b>Connect to the sheet</b>
-  <p style="margin:6px 0 0;color:var(--mute);font-size:14px">Paste the Apps Script web app URL (ends in <code>/exec</code>). It is saved on this phone only.</p>
+  <p style="margin:6px 0 0;color:var(--mute);font-size:14px">Paste the Apps Script web app URL (ends in <code>/exec</code>). The page then gives you a link to bookmark.</p>
   <input id="apiIn" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/.../exec" autocapitalize="off" autocomplete="off">
   <button id="apiSave">Save and load</button>
 </section>
@@ -98,7 +98,13 @@
 const API_URL = "";
 
 const POLL_MS = 15000;
-let api = API_URL || safeGet("busCheckinApi") || "";
+function fromHash(){
+  try{
+    const m = location.hash.match(/[#&]api=([^&]+)/);
+    return m ? decodeURIComponent(m[1]) : "";
+  }catch(e){ return ""; }
+}
+let api = API_URL || fromHash() || safeGet("busCheckinApi") || "";
 let cps = [], rows = [], cp = 0, filter = "all", query = "";
 const pending = new Set(); // "row:cp" keys with an unconfirmed write
 
@@ -225,7 +231,7 @@ else{
   $("apiSave").onclick = ()=>{
     const v = $("apiIn").value.trim();
     if(!/^https:\/\/script\.google\.com\/.+\/exec/.test(v)){ toast("That doesn't look like a /exec web app URL."); return; }
-    api = v; safeSet("busCheckinApi", v); start();
+    api = v; safeSet("busCheckinApi", v); location.hash = "api=" + encodeURIComponent(v); start();
   };
 }
 </script>
